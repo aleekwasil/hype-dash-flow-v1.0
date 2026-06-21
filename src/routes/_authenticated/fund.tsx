@@ -98,11 +98,11 @@ function Fund() {
         </div>
 
         <Button type="submit" disabled={initMut.isPending} className="w-full bg-gradient-primary shadow-glow">
-          {initMut.isPending ? "Redirecting…" : "Pay with Paystack"}
+          {initMut.isPending ? "Processing…" : "Fund Wallet"}
         </Button>
 
-        <p className="text-center text-xs text-muted-foreground">
-          You'll be redirected to Paystack to complete payment securely.
+        <p className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-center text-xs text-warning">
+          Demo mode — wallet credits instantly. Add <span className="font-mono">PAYSTACK_SECRET_KEY</span> in secrets to enable real payments.
         </p>
       </form>
     </AppShell>
