@@ -13,15 +13,31 @@ export const initFunding = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { genRef } = await import("./format");
 
+    const reference = genRef("FUND");
+
+    // DEMO MODE: when Paystack isn't configured, credit wallet directly
+    // and return a flag so the UI can skip the redirect.
     if (!isPaystackConfigured()) {
-      throw new Error("Payments not configured. Ask the admin to add PAYSTACK_SECRET_KEY.");
+      await supabaseAdmin.from("funding_intents").insert({
+        reference, user_id: context.userId, amount: data.amount, status: "success",
+        completed_at: new Date().toISOString(),
+      });
+      await supabaseAdmin.rpc("credit_wallet", { _user_id: context.userId, _amount: data.amount });
+      await supabaseAdmin.from("transactions").insert({
+        user_id: context.userId,
+        type: "wallet_funding",
+        status: "success",
+        amount: data.amount,
+        reference,
+        provider: "demo",
+        meta: { demo: true },
+      });
+      return { demo: true as const, reference, authorization_url: "" };
     }
 
     const { data: profile } = await context.supabase
       .from("profiles").select("email").eq("id", context.userId).maybeSingle();
     if (!profile?.email) throw new Error("Email missing on profile.");
-
-    const reference = genRef("FUND");
 
     await supabaseAdmin.from("funding_intents").insert({
       reference,
@@ -42,7 +58,7 @@ export const initFunding = createServerFn({ method: "POST" })
       metadata: { user_id: context.userId, purpose: "wallet_funding" },
     });
 
-    return { authorization_url: init.authorization_url, reference };
+    return { demo: false as const, authorization_url: init.authorization_url, reference };
   });
 
 const verifySchema = z.object({ reference: z.string().min(5) });
