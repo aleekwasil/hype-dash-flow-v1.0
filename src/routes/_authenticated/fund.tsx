@@ -35,6 +35,13 @@ function Fund() {
   const initMut = useMutation({
     mutationFn: () => i({ data: { amount: Number(amount) } }),
     onSuccess: (res) => {
+      if (res.demo) {
+        toast.success(`Wallet credited (demo mode) — ₦${Number(amount).toLocaleString()}`);
+        setAmount("");
+        qc.invalidateQueries({ queryKey: ["wallet"] });
+        qc.invalidateQueries({ queryKey: ["txns"] });
+        return;
+      }
       window.location.href = res.authorization_url;
     },
     onError: (e: any) => toast.error(e?.message ?? "Init failed"),
@@ -91,11 +98,11 @@ function Fund() {
         </div>
 
         <Button type="submit" disabled={initMut.isPending} className="w-full bg-gradient-primary shadow-glow">
-          {initMut.isPending ? "Redirecting…" : "Pay with Paystack"}
+          {initMut.isPending ? "Processing…" : "Fund Wallet"}
         </Button>
 
-        <p className="text-center text-xs text-muted-foreground">
-          You'll be redirected to Paystack to complete payment securely.
+        <p className="rounded-lg border border-warning/30 bg-warning/10 p-3 text-center text-xs text-warning">
+          Demo mode — wallet credits instantly. Add <span className="font-mono">PAYSTACK_SECRET_KEY</span> in secrets to enable real payments.
         </p>
       </form>
     </AppShell>
