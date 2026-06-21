@@ -1,6 +1,8 @@
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { ArrowRight, Shield, Wifi, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { BrandLockup } from "@/components/brand-logo";
+import { BRAND } from "@/lib/branding";
 
 export const Route = createFileRoute("/")({
   beforeLoad: async () => {
@@ -22,12 +24,7 @@ function Landing() {
     <div className="relative min-h-screen overflow-hidden bg-background">
       <div className="absolute inset-0 bg-gradient-hero" />
       <div className="relative mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
-        <div className="flex items-center gap-2">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-primary shadow-glow">
-            <span className="font-display text-base font-bold text-primary-foreground">H</span>
-          </div>
-          <span className="font-display text-xl font-bold tracking-tight">HypeData</span>
-        </div>
+        <BrandLockup size={36} />
 
         <div className="mt-16 flex-1">
           <h1 className="font-display text-4xl font-bold leading-tight tracking-tight text-balance">

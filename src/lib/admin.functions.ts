@@ -116,12 +116,12 @@ export const adjustWallet = createServerFn({ method: "POST" })
 
     await supabaseAdmin.from("transactions").insert({
       user_id: data.user_id,
-      type: data.action === "credit" ? "wallet_funding" : "wallet_debit_adjustment",
+      type: data.action === "credit" ? "wallet_funding" : "adjustment",
       status: "success",
       amount: data.amount,
       reference: genRef(data.action === "credit" ? "ADJC" : "ADJD"),
       provider: "admin",
-      meta: { admin_id: context.userId, note: data.note ?? null },
+      meta: { admin_id: context.userId, note: data.note ?? null, action: data.action },
     } as any);
 
     return { ok: true };

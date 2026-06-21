@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { PinDialog } from "@/components/pin-dialog";
 import { NETWORKS, type Network } from "@/lib/networks";
+import { NetworkLogo } from "@/components/network-logo";
 import { buyAirtime } from "@/lib/airtime.functions";
 import { getWallet } from "@/lib/wallet.functions";
 import { formatNaira } from "@/lib/format";
@@ -74,9 +75,7 @@ function Airtime() {
                     : "border-border/50 bg-card/50 text-muted-foreground hover:border-primary/50"
                 }`}
               >
-                <span className="grid h-8 w-8 place-items-center rounded-lg" style={{ background: n.color }}>
-                  <span className="text-[10px] font-bold text-black">{n.name.slice(0, 3).toUpperCase()}</span>
-                </span>
+                <NetworkLogo network={n.id} size={36} />
                 {n.name}
               </button>
             ))}
