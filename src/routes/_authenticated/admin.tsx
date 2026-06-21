@@ -11,7 +11,6 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { formatNaira, formatDate } from "@/lib/format";
-import { isAdmin } from "@/lib/profile.functions";
 import { getAdminStats, listUsers, listAllTransactions, adjustWallet } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/_authenticated/admin")({

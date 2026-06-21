@@ -2,7 +2,6 @@ import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { ArrowRight, Shield, Wifi, Zap } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { BrandLockup } from "@/components/brand-logo";
-import { BRAND } from "@/lib/branding";
 
 export const Route = createFileRoute("/")({
   beforeLoad: async () => {
