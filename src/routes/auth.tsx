@@ -1,9 +1,12 @@
-import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import { createFileRoute, useNavigate, useRouter, Link } from "@tanstack/react-router";
+import { useState, useMemo } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
+import { Eye, EyeOff, Zap, ShieldCheck, Headphones, Mail, Lock, User, Phone } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { BrandLogo } from "@/components/brand-logo";
+import { BRAND } from "@/lib/branding";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,8 +15,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export const Route = createFileRoute("/auth")({
   head: () => ({
     meta: [
-      { title: "Sign in — HypeData" },
-      { name: "description", content: "Sign in or create your HypeData account." },
+      { title: `Sign in — ${BRAND.name}` },
+      { name: "description", content: `Sign in or create your ${BRAND.name} account to buy airtime, data, and manage your wallet securely.` },
     ],
   }),
   component: AuthPage,
@@ -22,15 +25,38 @@ export const Route = createFileRoute("/auth")({
 const emailSchema = z.string().trim().email();
 const passSchema = z.string().min(8, "At least 8 characters");
 
+function passwordStrength(pw: string): { score: number; label: string; color: string } {
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+  if (/\d/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  const map = [
+    { label: "Too weak", color: "bg-destructive" },
+    { label: "Weak", color: "bg-destructive" },
+    { label: "Fair", color: "bg-warning" },
+    { label: "Good", color: "bg-warning" },
+    { label: "Strong", color: "bg-success" },
+    { label: "Excellent", color: "bg-success" },
+  ];
+  return { score, ...map[Math.min(score, 5)] };
+}
+
 function AuthPage() {
   const navigate = useNavigate();
   const router = useRouter();
   const [tab, setTab] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+  const [showPw, setShowPw] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const strength = useMemo(() => passwordStrength(password), [password]);
 
   async function handleEmail(e: React.FormEvent) {
     e.preventDefault();
@@ -43,6 +69,7 @@ function AuthPage() {
         if (error) throw error;
         toast.success("Welcome back");
       } else {
+        if (password !== confirm) throw new Error("Passwords do not match");
         const { error } = await supabase.auth.signUp({
           email: parsedEmail,
           password,
@@ -79,63 +106,289 @@ function AuthPage() {
   }
 
   return (
-    <div className="relative min-h-screen bg-background">
-      <div className="absolute inset-0 bg-gradient-hero" />
-      <div className="relative mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-10">
-        <div className="mb-8 flex items-center gap-2">
-          <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-primary shadow-glow">
-            <span className="font-display text-base font-bold text-primary-foreground">H</span>
-          </div>
-          <span className="font-display text-2xl font-bold">HypeData</span>
-        </div>
+    <div className="relative min-h-screen overflow-hidden bg-background">
+      {/* Ambient glow */}
+      <div className="pointer-events-none absolute inset-0 bg-gradient-hero" />
+      <div className="pointer-events-none absolute -top-32 left-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-primary/20 blur-3xl" />
+      <div className="pointer-events-none absolute bottom-0 right-0 h-[300px] w-[300px] rounded-full bg-accent/10 blur-3xl" />
 
-        <h1 className="font-display text-2xl font-bold">Welcome</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Sign in or create your account to continue.</p>
+      <div className="relative mx-auto flex min-h-screen w-full max-w-md flex-col px-5 py-8 sm:max-w-lg sm:px-6 sm:py-12">
+        {/* Hero */}
+        <header className="animate-fade-in flex flex-col items-center text-center">
+          <BrandLogo size={56} className="shadow-glow" />
+          <h1 className="mt-5 font-display text-2xl font-bold tracking-tight sm:text-3xl text-balance">
+            Nigeria's Fastest Data & Airtime Platform
+          </h1>
+          <p className="mt-2 max-w-sm text-sm text-muted-foreground sm:text-base">
+            Buy airtime, data and manage your wallet securely in seconds.
+          </p>
+        </header>
 
-        <Tabs value={tab} onValueChange={(v) => setTab(v as any)} className="mt-6">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signin">Sign in</TabsTrigger>
-            <TabsTrigger value="signup">Create account</TabsTrigger>
-          </TabsList>
+        {/* Auth Card — glass */}
+        <section
+          className="animate-scale-in mt-6 rounded-2xl border border-white/10 bg-card/40 p-5 shadow-card backdrop-blur-xl sm:mt-8 sm:p-7"
+          style={{ animationDelay: "80ms" }}
+        >
+          <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
+            <TabsList className="grid w-full grid-cols-2 bg-muted/40">
+              <TabsTrigger value="signin">Sign in</TabsTrigger>
+              <TabsTrigger value="signup">Create account</TabsTrigger>
+            </TabsList>
 
-          <form onSubmit={handleEmail} className="mt-5 space-y-4">
-            {tab === "signup" && (
-              <>
-                <div className="space-y-1.5">
-                  <Label htmlFor="fullName">Full name</Label>
-                  <Input id="fullName" required value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Ada Lovelace" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="phone">Phone</Label>
-                  <Input id="phone" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="08012345678" />
-                </div>
-              </>
-            )}
-            <div className="space-y-1.5">
-              <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
-            </div>
-            <Button type="submit" disabled={loading} className="w-full bg-gradient-primary shadow-glow">
-              {loading ? "Please wait…" : tab === "signin" ? "Sign in" : "Create account"}
-            </Button>
-          </form>
+            <TabsContent value="signin" className="mt-5">
+              <form onSubmit={handleEmail} className="space-y-4">
+                <FieldEmail value={email} onChange={setEmail} />
+                <FieldPassword
+                  value={password}
+                  onChange={setPassword}
+                  show={showPw}
+                  onToggle={() => setShowPw((s) => !s)}
+                />
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-gradient-primary shadow-glow transition-transform hover:scale-[1.01] active:scale-[0.99]"
+                >
+                  {loading ? "Please wait…" : "Sign in"}
+                </Button>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="signup" className="mt-5">
+              <form onSubmit={handleEmail} className="space-y-4">
+                <Field label="Full name" id="fullName" icon={<User className="h-4 w-4" />}>
+                  <Input
+                    id="fullName"
+                    required
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Ada Lovelace"
+                    className="pl-9"
+                  />
+                </Field>
+                <FieldEmail value={email} onChange={setEmail} />
+                <Field label="Phone" id="phone" icon={<Phone className="h-4 w-4" />}>
+                  <Input
+                    id="phone"
+                    required
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="08012345678"
+                    inputMode="tel"
+                    className="pl-9"
+                  />
+                </Field>
+                <FieldPassword
+                  value={password}
+                  onChange={setPassword}
+                  show={showPw}
+                  onToggle={() => setShowPw((s) => !s)}
+                />
+
+                {password && (
+                  <div className="space-y-1.5">
+                    <div className="flex h-1.5 gap-1">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <div
+                          key={i}
+                          className={`h-full flex-1 rounded-full transition-colors ${
+                            i < strength.score ? strength.color : "bg-muted"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Password strength: <span className="font-medium text-foreground">{strength.label}</span>
+                    </p>
+                  </div>
+                )}
+
+                <Field
+                  label="Confirm password"
+                  id="confirm"
+                  icon={<Lock className="h-4 w-4" />}
+                  trailing={
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirm((s) => !s)}
+                      className="text-muted-foreground hover:text-foreground"
+                      aria-label={showConfirm ? "Hide password" : "Show password"}
+                    >
+                      {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  }
+                >
+                  <Input
+                    id="confirm"
+                    type={showConfirm ? "text" : "password"}
+                    required
+                    value={confirm}
+                    onChange={(e) => setConfirm(e.target.value)}
+                    placeholder="••••••••"
+                    className="pl-9 pr-9"
+                  />
+                </Field>
+
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-gradient-primary shadow-glow transition-transform hover:scale-[1.01] active:scale-[0.99]"
+                >
+                  {loading ? "Please wait…" : "Create account"}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
 
           <div className="relative my-5">
-            <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border/50" /></div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">or</span>
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border/60" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase tracking-wider">
+              <span className="bg-card/0 px-2 text-muted-foreground">or continue with</span>
             </div>
           </div>
 
-          <Button variant="outline" type="button" onClick={handleGoogle} disabled={loading} className="w-full">
-            Continue with Google
+          <Button
+            variant="outline"
+            type="button"
+            onClick={handleGoogle}
+            disabled={loading}
+            className="w-full border-white/15 bg-white/5 hover:bg-white/10"
+          >
+            <GoogleIcon /> Continue with Google
           </Button>
-        </Tabs>
+        </section>
+
+        {/* Trust section */}
+        <section
+          className="animate-fade-in mt-6 grid grid-cols-1 gap-3 sm:mt-8 sm:grid-cols-3"
+          style={{ animationDelay: "160ms" }}
+        >
+          <TrustCard icon={<Zap className="h-4 w-4" />} title="Fast Delivery" desc="Airtime & data delivered in seconds." />
+          <TrustCard icon={<ShieldCheck className="h-4 w-4" />} title="Secure Transactions" desc="Bank-grade encryption & PIN protection." />
+          <TrustCard icon={<Headphones className="h-4 w-4" />} title="24/7 Support" desc="We're here whenever you need us." />
+        </section>
+
+        {/* Footer */}
+        <footer className="mt-8 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 pb-2 text-xs text-muted-foreground">
+          <Link to="/" className="hover:text-foreground">Terms of Service</Link>
+          <span className="opacity-30">•</span>
+          <Link to="/" className="hover:text-foreground">Privacy Policy</Link>
+          <span className="opacity-30">•</span>
+          <a href={`mailto:${BRAND.supportEmail}`} className="hover:text-foreground">Contact Support</a>
+        </footer>
       </div>
     </div>
+  );
+}
+
+function Field({
+  label,
+  id,
+  icon,
+  trailing,
+  children,
+}: {
+  label: string;
+  id: string;
+  icon?: React.ReactNode;
+  trailing?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor={id}>{label}</Label>
+      <div className="relative">
+        {icon && (
+          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+            {icon}
+          </span>
+        )}
+        {children}
+        {trailing && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2">{trailing}</span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function FieldEmail({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <Field label="Email" id="email" icon={<Mail className="h-4 w-4" />}>
+      <Input
+        id="email"
+        type="email"
+        required
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="you@example.com"
+        autoComplete="email"
+        className="pl-9"
+      />
+    </Field>
+  );
+}
+
+function FieldPassword({
+  value,
+  onChange,
+  show,
+  onToggle,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  show: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <Field
+      label="Password"
+      id="password"
+      icon={<Lock className="h-4 w-4" />}
+      trailing={
+        <button
+          type="button"
+          onClick={onToggle}
+          className="text-muted-foreground hover:text-foreground"
+          aria-label={show ? "Hide password" : "Show password"}
+        >
+          {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+        </button>
+      }
+    >
+      <Input
+        id="password"
+        type={show ? "text" : "password"}
+        required
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="••••••••"
+        className="pl-9 pr-9"
+      />
+    </Field>
+  );
+}
+
+function TrustCard({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-card/30 p-3 backdrop-blur-md transition-colors hover:bg-card/50">
+      <div className="flex items-center gap-2">
+        <span className="grid h-7 w-7 place-items-center rounded-lg bg-primary/15 text-primary">
+          {icon}
+        </span>
+        <h3 className="text-sm font-semibold">{title}</h3>
+      </div>
+      <p className="mt-1.5 text-xs text-muted-foreground">{desc}</p>
+    </div>
+  );
+}
+
+function GoogleIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
+      <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.24 1.4-1.7 4.1-5.5 4.1-3.3 0-6-2.7-6-6.1S8.7 6 12 6c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.5 14.6 2.5 12 2.5 6.8 2.5 2.6 6.7 2.6 12s4.2 9.5 9.4 9.5c5.4 0 9-3.8 9-9.2 0-.6-.1-1.1-.2-1.6H12z"/>
+    </svg>
   );
 }
