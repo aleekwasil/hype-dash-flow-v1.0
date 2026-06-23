@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { WalletCard } from "@/components/wallet-card";
+import { UserAvatar } from "@/components/user-avatar";
 import { getWallet, getTransactions } from "@/lib/wallet.functions";
 import { hasPin } from "@/lib/pin.functions";
 import { getProfile } from "@/lib/profile.functions";
@@ -64,12 +65,6 @@ function greeting() {
   return "Good evening";
 }
 
-function initials(name?: string | null, email?: string | null) {
-  const src = (name || email || "U").trim();
-  const parts = src.split(/\s+/).filter(Boolean);
-  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-  return src.slice(0, 2).toUpperCase();
-}
 
 function Dashboard() {
   const qc = useQueryClient();
@@ -101,12 +96,7 @@ function Dashboard() {
       {/* Header */}
       <header className="mb-5 flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">
-          <div
-            aria-hidden
-            className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-gradient-to-br from-primary to-accent text-sm font-bold text-primary-foreground shadow-glow ring-2 ring-background"
-          >
-            {initials(profile.data?.full_name, profile.data?.email)}
-          </div>
+          <UserAvatar src={profile.data?.avatar_url} size={44} className="shadow-glow" />
           <div className="min-w-0">
             <p className="text-xs text-muted-foreground">{greeting()},</p>
             <h1 className="truncate font-display text-lg font-bold tracking-tight">
