@@ -18,6 +18,7 @@ import {
   getStoredCredential,
   enrollBiometric,
   clearStoredCredential,
+  webauthnCreateAllowed,
 } from "@/lib/biometric";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -133,15 +134,26 @@ function Profile() {
         </Link>
 
         {bioAvailable && (
-          <div className="flex items-center justify-between rounded-xl border border-border/50 bg-card/50 p-4">
-            <div className="flex items-center gap-3">
-              <Fingerprint className="h-5 w-5 text-primary" />
-              <div>
-                <p className="font-medium">Biometric login</p>
-                <p className="text-xs text-muted-foreground">Use Face ID, Touch ID or fingerprint on this device.</p>
+          <div className="rounded-xl border border-border/50 bg-card/50 p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <Fingerprint className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="font-medium">Biometric login</p>
+                  <p className="text-xs text-muted-foreground">Use Face ID, Touch ID or fingerprint on this device.</p>
+                </div>
               </div>
+              <Switch
+                checked={bioEnabled}
+                disabled={bioBusy || (!bioEnabled && !webauthnCreateAllowed())}
+                onCheckedChange={toggleBiometric}
+              />
             </div>
-            <Switch checked={bioEnabled} disabled={bioBusy} onCheckedChange={toggleBiometric} />
+            {!bioEnabled && !webauthnCreateAllowed() && (
+              <p className="mt-2 text-xs text-warning">
+                Biometric setup is blocked inside this preview. Open the app in a new browser tab or your published site to enable it.
+              </p>
+            )}
           </div>
         )}
 

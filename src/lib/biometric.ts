@@ -60,6 +60,45 @@ export function biometricSupported(): boolean {
   );
 }
 
+/**
+ * Detect whether the current document is allowed to call
+ * `navigator.credentials.create({ publicKey })`. Lovable's preview iframe
+ * (and any cross-origin iframe without an explicit
+ * `allow="publickey-credentials-create"` attribute) blocks WebAuthn
+ * registration via Permissions Policy. We surface this so the UI can
+ * gracefully disable enrollment with a friendly message instead of letting
+ * the browser throw "The 'publickey-credentials-create' feature is not
+ * enabled in this document".
+ */
+export function webauthnCreateAllowed(): boolean {
+  if (typeof document === "undefined") return false;
+  try {
+    const fp: any = (document as any).featurePolicy ?? (document as any).permissionsPolicy;
+    if (fp && typeof fp.allowsFeature === "function") {
+      return fp.allowsFeature("publickey-credentials-create");
+    }
+  } catch {
+    /* ignore */
+  }
+  // If we can't introspect, assume allowed when not framed; restricted in iframes.
+  if (typeof window !== "undefined" && window.top !== window.self) return false;
+  return true;
+}
+
+export function webauthnGetAllowed(): boolean {
+  if (typeof document === "undefined") return false;
+  try {
+    const fp: any = (document as any).featurePolicy ?? (document as any).permissionsPolicy;
+    if (fp && typeof fp.allowsFeature === "function") {
+      return fp.allowsFeature("publickey-credentials-get");
+    }
+  } catch {
+    /* ignore */
+  }
+  if (typeof window !== "undefined" && window.top !== window.self) return false;
+  return true;
+}
+
 export async function platformAuthenticatorAvailable(): Promise<boolean> {
   if (!biometricSupported()) return false;
   try {
@@ -68,6 +107,7 @@ export async function platformAuthenticatorAvailable(): Promise<boolean> {
     return false;
   }
 }
+
 
 export function getStoredCredential(): StoredCredential | null {
   if (typeof window === "undefined") return null;
@@ -90,6 +130,11 @@ export async function enrollBiometric(opts: {
   displayName?: string;
 }): Promise<StoredCredential> {
   if (!biometricSupported()) throw new Error("Biometric authentication is not supported on this device.");
+  if (!webauthnCreateAllowed()) {
+    throw new Error(
+      "Biometric setup is blocked in this preview window. Open the app in a new browser tab (or on your deployed site) to enable it.",
+    );
+  }
 
   const cred = (await navigator.credentials.create({
     publicKey: {
@@ -130,6 +175,12 @@ export async function verifyBiometric(): Promise<StoredCredential> {
   const stored = getStoredCredential();
   if (!stored) throw new Error("No biometric credential is set up on this device.");
   if (!biometricSupported()) throw new Error("Biometric authentication is not supported on this device.");
+  if (!webauthnGetAllowed()) {
+    throw new Error(
+      "Biometric login is blocked in this preview window. Open the app in a new browser tab to use it.",
+    );
+  }
+
 
   const assertion = (await navigator.credentials.get({
     publicKey: {

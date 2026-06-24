@@ -12,12 +12,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  biometricSupported,
   platformAuthenticatorAvailable,
   getStoredCredential,
   verifyBiometric,
   enrollBiometric,
   clearStoredCredential,
+  webauthnCreateAllowed,
+  webauthnGetAllowed,
 } from "@/lib/biometric";
 
 export const Route = createFileRoute("/auth")({
@@ -71,12 +72,15 @@ function AuthPage() {
 
   useEffect(() => {
     let cancelled = false;
-    platformAuthenticatorAvailable().then((ok) => { if (!cancelled) setBioAvailable(ok); });
+    platformAuthenticatorAvailable().then((ok) => {
+      if (!cancelled) setBioAvailable(ok && webauthnGetAllowed());
+    });
     return () => { cancelled = true; };
   }, []);
 
   const strength = useMemo(() => passwordStrength(password), [password]);
-  const canBiometricLogin = bioAvailable && !!storedBio;
+  const canBiometricLogin = bioAvailable && !!storedBio && webauthnGetAllowed();
+  const canBiometricEnroll = bioAvailable && webauthnCreateAllowed();
 
   async function finishLogin() {
     router.invalidate();
@@ -94,7 +98,7 @@ function AuthPage() {
         if (error) throw error;
         toast.success("Welcome back");
         // Offer biometric enrollment if available and not yet enrolled for this user
-        if (data.user && bioAvailable && (!storedBio || storedBio.userId !== data.user.id)) {
+        if (data.user && canBiometricEnroll && (!storedBio || storedBio.userId !== data.user.id)) {
           setAskEnroll({ userId: data.user.id, email: parsedEmail, displayName: data.user.user_metadata?.full_name });
           setLoading(false);
           return;
@@ -188,10 +192,10 @@ function AuthPage() {
         <header className="animate-fade-in flex flex-col items-center text-center">
           <BrandLogo size={56} className="shadow-glow" />
           <h1 className="mt-5 font-display text-2xl font-bold tracking-tight sm:text-3xl text-balance">
-            Welcome to {BRAND.name}
+            Welcome to Nigeria's Fastest Data &amp; Airtime Hub
           </h1>
-          <p className="mt-2 max-w-sm text-sm text-muted-foreground sm:text-base">
-            Airtime, data and wallet — fast and secure.
+          <p className="mt-2 max-w-sm text-sm text-muted-foreground sm:text-base text-balance">
+            Buy Airtime and Data in just a little seconds.
           </p>
         </header>
 
