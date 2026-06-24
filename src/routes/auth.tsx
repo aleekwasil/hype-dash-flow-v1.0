@@ -98,7 +98,7 @@ function AuthPage() {
         if (error) throw error;
         toast.success("Welcome back");
         // Offer biometric enrollment if available and not yet enrolled for this user
-        if (data.user && bioAvailable && (!storedBio || storedBio.userId !== data.user.id)) {
+        if (data.user && canBiometricEnroll && (!storedBio || storedBio.userId !== data.user.id)) {
           setAskEnroll({ userId: data.user.id, email: parsedEmail, displayName: data.user.user_metadata?.full_name });
           setLoading(false);
           return;
