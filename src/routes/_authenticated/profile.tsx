@@ -26,6 +26,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { UserAvatar } from "@/components/user-avatar";
+import { WhatsAppIcon } from "@/components/whatsapp-icon";
 import { supabase } from "@/integrations/supabase/client";
 import { getProfile, updateProfile, isAdmin } from "@/lib/profile.functions";
 import { hasPin } from "@/lib/pin.functions";
