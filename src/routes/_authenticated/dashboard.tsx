@@ -17,10 +17,12 @@ import {
 import { AppShell } from "@/components/app-shell";
 import { WalletCard } from "@/components/wallet-card";
 import { UserAvatar } from "@/components/user-avatar";
+import { WhatsAppIcon } from "@/components/whatsapp-icon";
 import { getWallet, getTransactions } from "@/lib/wallet.functions";
 import { hasPin } from "@/lib/pin.functions";
 import { getProfile } from "@/lib/profile.functions";
 import { formatDate, formatNaira } from "@/lib/format";
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — HypeData" }] }),
@@ -162,8 +164,24 @@ function Dashboard() {
               <p className="text-xs text-muted-foreground">{q.desc}</p>
             </Link>
           ))}
+          <a
+            href="https://wa.me/2347087950366"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="col-start-2 flex animate-fade-in items-center gap-3 rounded-2xl border border-border/60 bg-card/60 p-4 backdrop-blur transition hover:-translate-y-0.5 hover:border-[#25D366]/40 hover:bg-card active:scale-[0.98]"
+            aria-label="Chat with HypeData support on WhatsApp"
+          >
+            <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[#25D366] shadow-glow transition hover:scale-110">
+              <WhatsAppIcon className="h-5 w-5 text-white" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold">WhatsApp</p>
+              <p className="text-xs text-muted-foreground">Support</p>
+            </div>
+          </a>
         </div>
       </section>
+
 
       {/* Recent */}
       <section className="mt-6">

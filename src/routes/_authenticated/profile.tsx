@@ -26,6 +26,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { UserAvatar } from "@/components/user-avatar";
+import { WhatsAppIcon } from "@/components/whatsapp-icon";
 import { supabase } from "@/integrations/supabase/client";
 import { getProfile, updateProfile, isAdmin } from "@/lib/profile.functions";
 import { hasPin } from "@/lib/pin.functions";
@@ -531,12 +532,28 @@ function Profile() {
             <DialogTitle>Help & Support</DialogTitle>
             <DialogDescription>Need assistance? Our support team is ready to help.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-2">
+          <div className="space-y-3 py-2">
+            <a
+              href="https://wa.me/2347087950366"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 rounded-xl border border-[#25D366]/30 bg-[#25D366]/10 p-3 transition hover:bg-[#25D366]/15"
+            >
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#25D366] text-white">
+                <WhatsAppIcon className="h-5 w-5" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold">WhatsApp Support</p>
+                <p className="text-xs text-muted-foreground">0708 795 0366</p>
+                <p className="mt-0.5 text-xs text-[#25D366]">Chat with our support team</p>
+              </div>
+              <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+            </a>
             <div className="flex items-center gap-3 rounded-xl border border-border/50 p-3">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
                 <Mail className="h-5 w-5" />
               </span>
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium">Email support</p>
                 <p className="text-xs text-muted-foreground">support@hypedata.ng</p>
               </div>
@@ -552,6 +569,7 @@ function Profile() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
 
       {/* About dialog */}
       <Dialog open={aboutOpen} onOpenChange={setAboutOpen}>
